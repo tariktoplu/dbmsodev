@@ -1,8 +1,6 @@
 package com.spotify;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
-import java.sql.ResultSet;
+import java.math.BigDecimal;
+import java.sql.*;
 
 public class DbFunctions {
     public Connection connect_to_db(){
@@ -265,6 +263,96 @@ public class DbFunctions {
         } finally {
             try {
                 if (statement != null) statement.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                System.out.println("Bağlantı kapatma hatası: " + e.getMessage());
+            }
+        }
+    }
+    public void sikayetEkle(int kullaniciId, String sikayetIcerik) {
+        Connection conn = this.connect_to_db();
+        CallableStatement stmt = null;
+
+        try {
+            stmt = conn.prepareCall("{CALL public.sikayet_ekle(?, ?)}");
+            stmt.setInt(1, kullaniciId);
+            stmt.setString(2, sikayetIcerik);
+            stmt.execute();
+            System.out.println("Şikayet başarıyla eklendi.");
+        } catch (Exception e) {
+            System.out.println("Hata: " + e.getMessage());
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                System.out.println("Bağlantı kapatma hatası: " + e.getMessage());
+            }
+        }
+    }
+
+    public void odemeEkle(int kullaniciId, BigDecimal miktar) {
+        Connection conn = this.connect_to_db();
+        CallableStatement stmt = null;
+
+        try {
+            stmt = conn.prepareCall("{CALL public.odeme_ekle(?, ?)}");
+            stmt.setInt(1, kullaniciId);
+            stmt.setBigDecimal(2, miktar);
+            stmt.execute();
+            System.out.println("Ödeme işlemi başarıyla eklendi.");
+        } catch (Exception e) {
+            System.out.println("Hata: " + e.getMessage());
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                System.out.println("Bağlantı kapatma hatası: " + e.getMessage());
+            }
+        }
+    }
+
+    public void dinlemeEkle(int kullaniciId, int icerikId, Time sure) {
+        Connection conn = this.connect_to_db();
+        CallableStatement stmt = null;
+
+        try {
+            stmt = conn.prepareCall("{CALL public.dinleme_ekle(?, ?, ?)}");
+            stmt.setInt(1, kullaniciId);
+            stmt.setInt(2, icerikId);
+            stmt.setTime(3, sure);
+            stmt.execute();
+            System.out.println("Dinleme geçmişine içerik başarıyla eklendi.");
+        } catch (Exception e) {
+            System.out.println("Hata: " + e.getMessage());
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+                if (conn != null) conn.close();
+            } catch (Exception e) {
+                System.out.println("Bağlantı kapatma hatası: " + e.getMessage());
+            }
+        }
+    }
+
+    public void degerlendirmeEkle(int kullaniciId, int icerikId, int puan, String yorum) {
+        Connection conn = this.connect_to_db();
+        CallableStatement stmt = null;
+
+        try {
+            stmt = conn.prepareCall("{CALL public.degerlendirme_ekle(?, ?, ?, ?)}");
+            stmt.setInt(1, kullaniciId);
+            stmt.setInt(2, icerikId);
+            stmt.setInt(3, puan);
+            stmt.setString(4, yorum);
+            stmt.execute();
+            System.out.println("İçerik değerlendirmesi başarıyla eklendi.");
+        } catch (Exception e) {
+            System.out.println("Hata: " + e.getMessage());
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
             } catch (Exception e) {
                 System.out.println("Bağlantı kapatma hatası: " + e.getMessage());

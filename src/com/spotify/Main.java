@@ -1,4 +1,7 @@
 package com.spotify;
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -17,9 +20,13 @@ public class Main {
                 System.out.println("4. İçerik Türüne Göre Sayı");
                 System.out.println("5. Sanatçıya Göre İçerik Listele");
                 System.out.println("6. İçerik Güncelle");
-                System.out.println("7. Çıkış");
+                System.out.println("7. Şikayet Ekle");
+                System.out.println("8. Ödeme Ekle");
+                System.out.println("9. Dinleme Ekle");
+                System.out.println("10. Değerlendirme Ekle");
+                System.out.println("11. Çıkış");
 
-                System.out.print("Seçiminizi yapın (1/2/3/4/5/6/7): ");
+                System.out.print("Seçiminizi yapın (1/2/3/4/5/6/7/8/9/10/11): ");
                 int secim = scanner.nextInt();
                 scanner.nextLine(); // buffer'ı temizle
 
@@ -164,10 +171,51 @@ public class Main {
                         break;
 
                     case 7:
+                        System.out.print("Kullanıcı ID'sini girin: ");
+                        int kullaniciIdSikayet = scanner.nextInt();
+                        scanner.nextLine(); // buffer'ı temizle
+                        System.out.print("Şikayet içeriğini girin: ");
+                        String sikayetIcerik = scanner.nextLine();
+                        db.sikayetEkle(kullaniciIdSikayet, sikayetIcerik);
+                        break;
+                    case 8:
+                        System.out.print("Kullanıcı ID'sini girin: ");
+                        int kullaniciIdOdeme = scanner.nextInt();
+                        System.out.print("Ödeme miktarını girin: ");
+                        BigDecimal odemeMiktar = scanner.nextBigDecimal();
+                        db.odemeEkle(kullaniciIdOdeme, odemeMiktar);
+                        break;
+                    case 9:
+                        System.out.print("Kullanıcı ID'sini girin: ");
+                        int kullaniciIdDinleme = scanner.nextInt();
+                        System.out.print("İçerik ID'sini girin: ");
+                        int icerikIdDinleme = scanner.nextInt();
+                        System.out.print("Dinleme süresini girin (saniye cinsinden): ");
+                        int sureDinleme = scanner.nextInt();
+
+                        // Saniye değeri 60'dan büyükse dakika ve saniye olarak bölün
+                        int dakika = sureDinleme / 60;
+                        int saniye = sureDinleme % 60;
+
+                        // Dinleme süresini dakika ve saniye cinsinden LocalTime olarak oluştur
+                        db.dinlemeEkle(kullaniciIdDinleme, icerikIdDinleme, Time.valueOf(LocalTime.of(0, dakika, saniye)));
+                        break;
+                    case 10:
+                        System.out.print("Kullanıcı ID'sini girin: ");
+                        int kullaniciIdDegerlendirme = scanner.nextInt();
+                        System.out.print("İçerik ID'sini girin: ");
+                        int icerikIdDegerlendirme = scanner.nextInt();
+                        System.out.print("Puanı girin (1-5): ");
+                        int puan = scanner.nextInt();
+                        scanner.nextLine(); // buffer'ı temizle
+                        System.out.print("Yorumunuzu girin: ");
+                        String yorum = scanner.nextLine();
+                        db.degerlendirmeEkle(kullaniciIdDegerlendirme, icerikIdDegerlendirme, puan, yorum);
+                        break;
+                    case 11:
                         System.out.println("Çıkılıyor...");
                         scanner.close();
                         return;
-
                     default:
                         System.out.println("Geçersiz seçim, tekrar deneyin.");
                 }
