@@ -1,227 +1,230 @@
 package com.spotify;
+
+import javax.swing.*;
+import java.awt.*;
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.time.LocalTime;
-import java.util.InputMismatchException;
-import java.util.Scanner;
 
 public class Main {
+    private static final DbFunctions db = new DbFunctions();
 
     public static void main(String[] args) {
-        DbFunctions db = new DbFunctions();
-        Scanner scanner = new Scanner(System.in);
+        // Ana pencere oluşturma
+        JFrame frame = new JFrame("Spotify Yönetim Sistemi");
+        frame.setSize(600, 500); // Boyut arttırıldı
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        while (true) {
+        // Panel ve düzen
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 1));
+        frame.add(panel);
+
+        // Butonlar ve eylemler
+        JButton btnIcerikEkle = new JButton("İçerik Ekle");
+        btnIcerikEkle.addActionListener(e -> icerikEkleDialog());
+        panel.add(btnIcerikEkle);
+
+        JButton btnIcerikAra = new JButton("İçerik Ara");
+        btnIcerikAra.addActionListener(e -> icerikAraDialog());
+        panel.add(btnIcerikAra);
+
+        JButton btnIcerikSil = new JButton("İçerik Sil");
+        btnIcerikSil.addActionListener(e -> icerikSilDialog());
+        panel.add(btnIcerikSil);
+
+        JButton btnIcerikGuncelle = new JButton("İçerik Güncelle");
+        btnIcerikGuncelle.addActionListener(e -> icerikGuncelleDialog());
+        panel.add(btnIcerikGuncelle);
+
+        JButton btnSikayetEkle = new JButton("Şikayet Ekle");
+        btnSikayetEkle.addActionListener(e -> sikayetEkleDialog());
+        panel.add(btnSikayetEkle);
+
+        JButton btnDegerlendirmeEkle = new JButton("Değerlendirme Ekle");
+        btnDegerlendirmeEkle.addActionListener(e -> degerlendirmeEkleDialog());
+        panel.add(btnDegerlendirmeEkle);
+
+        JButton btnSanatciyaGoreListele = new JButton("Sanatçıya Göre Listele");
+        btnSanatciyaGoreListele.addActionListener(e -> sanatciyaGoreListeleDialog());
+        panel.add(btnSanatciyaGoreListele);
+
+        JButton btnOdemeEkle = new JButton("Ödeme Ekle");
+        btnOdemeEkle.addActionListener(e -> odemeEkleDialog());
+        panel.add(btnOdemeEkle);
+
+        JButton btnCikis = new JButton("Çıkış");
+        btnCikis.addActionListener(e -> System.exit(0));
+        panel.add(btnCikis);
+
+        // Pencereyi görünür yap
+        frame.setVisible(true);
+    }
+
+    private static void icerikEkleDialog() {
+        JTextField kullaniciIdField = new JTextField();
+        JTextField adiField = new JTextField();
+        JTextField turuField = new JTextField();
+        JTextField sureField = new JTextField();
+        JTextField sanatciIdField = new JTextField();
+        JTextField albumIdField = new JTextField();
+
+        Object[] inputs = {
+                "Kullanıcı ID:", kullaniciIdField,
+                "Adı:", adiField,
+                "Tür (s, a, p):", turuField,
+                "Süre (saniye):", sureField,
+                "Sanatçı ID:", sanatciIdField,
+                "Albüm ID (Opsiyonel):", albumIdField
+        };
+
+        int result = JOptionPane.showConfirmDialog(null, inputs, "İçerik Ekle", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
             try {
-                System.out.println("\n--- İşlem Seçin ---");
-                System.out.println("1. İçerik Ekle");
-                System.out.println("2. İçerik Ara");
-                System.out.println("3. İçerik Sil");
-                System.out.println("4. İçerik Türüne Göre Sayı");
-                System.out.println("5. Sanatçıya Göre İçerik Listele");
-                System.out.println("6. İçerik Güncelle");
-                System.out.println("7. Şikayet Ekle");
-                System.out.println("8. Ödeme Ekle");
-                System.out.println("9. Dinleme Ekle");
-                System.out.println("10. Değerlendirme Ekle");
-                System.out.println("11. Çıkış");
+                int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
+                String adi = adiField.getText();
+                char turu = turuField.getText().toLowerCase().charAt(0);
+                int sure = Integer.parseInt(sureField.getText());
+                int sanatciId = Integer.parseInt(sanatciIdField.getText());
+                Integer albumId = albumIdField.getText().isEmpty() ? null : Integer.parseInt(albumIdField.getText());
 
-                System.out.print("Seçiminizi yapın (1/2/3/4/5/6/7/8/9/10/11): ");
-                int secim = scanner.nextInt();
-                scanner.nextLine(); // buffer'ı temizle
+                db.insertIcerik(adi, sure, albumId, sanatciId, turu, kullaniciId);
+                JOptionPane.showMessageDialog(null, "İçerik başarıyla eklendi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                switch (secim) {
-                    case 1:
-                        try {
-                            System.out.print("Kullanıcı ID'nizi girin: ");
-                            int kullaniciId;
-                            try {
-                                kullaniciId = scanner.nextInt();
-                                scanner.nextLine(); // buffer'ı temizle
-                            } catch (InputMismatchException e) {
-                                System.out.println("Geçersiz Kullanıcı ID'si! Sayı giriniz.");
-                                scanner.nextLine(); // buffer'ı temizle
-                                break;
-                            }
+    private static void icerikAraDialog() {
+        String baslik = JOptionPane.showInputDialog(null, "Aramak istediğiniz içeriğin başlığı:", "İçerik Ara", JOptionPane.QUESTION_MESSAGE);
+        if (baslik != null && !baslik.isEmpty()) {
+            db.searchIcerik(baslik);
+            JOptionPane.showMessageDialog(null, "Arama tamamlandı! Sonuçlar console'a yazdırıldı.");
+        }
+    }
 
-                            System.out.println("Eklemek İstediğiniz İçeriğin Adı:");
-                            String adi = scanner.nextLine();
+    private static void icerikSilDialog() {
+        String idStr = JOptionPane.showInputDialog(null, "Silmek istediğiniz içeriğin ID'sini girin:", "İçerik Sil", JOptionPane.QUESTION_MESSAGE);
+        if (idStr != null && !idStr.isEmpty()) {
+            try {
+                int id = Integer.parseInt(idStr);
+                db.deleteIcerik(id);
+                JOptionPane.showMessageDialog(null, "İçerik başarıyla silindi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                            System.out.print("İçeriğin türünü girin (s: Şarkı, a: Albüm, p: Podcast): ");
-                            char turu = scanner.nextLine().toLowerCase().charAt(0);
+    private static void icerikGuncelleDialog() {
+        JTextField idField = new JTextField();
+        JTextField yeniAdiField = new JTextField();
+        JTextField yeniSureField = new JTextField();
+        JTextField yeniTuruField = new JTextField();
 
-                            if (turu != 's' && turu != 'a' && turu != 'p') {
-                                System.out.println("Geçersiz tür! Lütfen s, a veya p giriniz.");
-                                break;
-                            }
+        Object[] inputs = {
+                "İçerik ID:", idField,
+                "Yeni Adı:", yeniAdiField,
+                "Yeni Süre (saniye):", yeniSureField,
+                "Yeni Tür (s, a, p):", yeniTuruField
+        };
 
-                            System.out.print("İçeriğin süresini girin (saniye cinsinden): ");
-                            int sure;
-                            try {
-                                sure = scanner.nextInt();
-                                scanner.nextLine(); // buffer'ı temizle
-                            } catch (InputMismatchException e) {
-                                System.out.println("Geçersiz süre! Sayı giriniz.");
-                                scanner.nextLine(); // buffer'ı temizle
-                                break;
-                            }
+        int result = JOptionPane.showConfirmDialog(null, inputs, "İçerik Güncelle", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int id = Integer.parseInt(idField.getText());
+                String yeniAdi = yeniAdiField.getText();
+                int yeniSure = Integer.parseInt(yeniSureField.getText());
+                char yeniTuru = yeniTuruField.getText().toLowerCase().charAt(0);
+                db.updateIcerik(id, yeniAdi, yeniSure, yeniTuru);
+                JOptionPane.showMessageDialog(null, "İçerik başarıyla güncellendi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                            int albumId = 0;
-                            if (turu == 's') {
-                                System.out.print("Albüm ID'sini girin: ");
-                                try {
-                                    albumId = scanner.nextInt();
-                                    scanner.nextLine(); // buffer'ı temizle
-                                } catch (InputMismatchException e) {
-                                    System.out.println("Geçersiz Albüm ID'si! Sayı giriniz.");
-                                    scanner.nextLine(); // buffer'ı temizle
-                                    break;
-                                }
-                            }
+    private static void sikayetEkleDialog() {
+        JTextField kullaniciIdField = new JTextField();
+        JTextField sikayetField = new JTextField();
 
-                            System.out.print("Sanatçı ID'sini girin: ");
-                            int sanatciId;
-                            try {
-                                sanatciId = scanner.nextInt();
-                                scanner.nextLine(); // buffer'ı temizle
-                            } catch (InputMismatchException e) {
-                                System.out.println("Geçersiz Sanatçı ID'si! Sayı giriniz.");
-                                scanner.nextLine(); // buffer'ı temizle
-                                break;
-                            }
+        Object[] inputs = {
+                "Kullanıcı ID:", kullaniciIdField,
+                "Şikayet:", sikayetField
+        };
 
-                            // Kullanıcı ID'si ile birlikte içerik ekleme
-                            db.insertIcerik(adi, sure, albumId, sanatciId, turu, kullaniciId);
-                            break;
-                        } catch (Exception e) {
-                            System.out.println("İşlem sırasında bir hata oluştu: " + e.getMessage());
-                            break;
-                        }
-                    case 2:
-                        System.out.print("Aramak istediğiniz içeriğin başlığını girin: ");
-                        String aramaTerimi = scanner.nextLine();
-                        db.searchIcerik(aramaTerimi);  // İçerikleri ara
-                        break;
+        int result = JOptionPane.showConfirmDialog(null, inputs, "Şikayet Ekle", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
+                String sikayet = sikayetField.getText();
+                db.sikayetEkle(kullaniciId, sikayet);
+                JOptionPane.showMessageDialog(null, "Şikayet başarıyla eklendi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                    case 3:
-                        System.out.print("Silmek istediğiniz içeriğin ID'sini girin: ");
-                        try {
-                            int icerikId = scanner.nextInt();
-                            db.deleteIcerik(icerikId);  // İçeriği sil
-                        } catch (InputMismatchException e) {
-                            System.out.println("Geçersiz ID! Sayı giriniz.");
-                            scanner.nextLine(); // buffer'ı temizle
-                        }
-                        break;
+    private static void degerlendirmeEkleDialog() {
+        JTextField icerikIdField = new JTextField();
+        JTextField kullaniciIdField = new JTextField();
+        JTextField degerlendirmeField = new JTextField();
+        JTextField yorumField = new JTextField();
 
-                    case 4:
-                        System.out.print("İçerik türünü girin (s: Şarkı, a: Albüm, p: Podcast): ");
-                        char sayimTuru = scanner.nextLine().toLowerCase().charAt(0);
-                        if (sayimTuru != 's' && sayimTuru != 'a' && sayimTuru != 'p') {
-                            System.out.println("Geçersiz tür! Lütfen s, a veya p giriniz.");
-                        } else {
-                            db.icerikTuruGoreSay(sayimTuru);  // İçerik türüne göre içerik sayısını listele
-                        }
-                        break;
+        Object[] inputs = {
+                "İçerik ID:", icerikIdField,
+                "Kullanıcı ID:", kullaniciIdField,
+                "Değerlendirme (1-5):", degerlendirmeField,
+                "Yorum (Opsiyonel):", yorumField
+        };
 
-                    case 5:
-                        System.out.print("Sanatçı ID'sini girin: ");
-                        try {
-                            int sanatciIdList = scanner.nextInt();
-                            db.sanatciyaGoreIcerikListele(sanatciIdList);  // Sanatçıya göre içerik listele
-                        } catch (InputMismatchException e) {
-                            System.out.println("Geçersiz Sanatçı ID'si! Sayı giriniz.");
-                            scanner.nextLine(); // buffer'ı temizle
-                        }
-                        break;
+        int result = JOptionPane.showConfirmDialog(null, inputs, "Değerlendirme Ekle", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int icerikId = Integer.parseInt(icerikIdField.getText());
+                int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
+                int degerlendirme = Integer.parseInt(degerlendirmeField.getText());
+                String yorum = yorumField.getText();
+                db.degerlendirmeEkle(icerikId, kullaniciId, degerlendirme, yorum);
+                JOptionPane.showMessageDialog(null, "Değerlendirme başarıyla eklendi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                    case 6:
-                        System.out.print("Güncellemek istediğiniz içerik ID'sini girin: ");
-                        int guncelleIcerikId;
-                        try {
-                            guncelleIcerikId = scanner.nextInt();
-                        } catch (InputMismatchException e) {
-                            System.out.println("Geçersiz ID! Sayı giriniz.");
-                            scanner.nextLine(); // buffer'ı temizle
-                            break;
-                        }
-                        scanner.nextLine(); // buffer'ı temizle
+    private static void sanatciyaGoreListeleDialog() {
+        String sanatciIdStr = JOptionPane.showInputDialog(null, "Sanatçı ID'sini girin:", "Sanatçıya Göre Listele", JOptionPane.QUESTION_MESSAGE);
+        if (sanatciIdStr != null && !sanatciIdStr.isEmpty()) {
+            try {
+                int sanatciId = Integer.parseInt(sanatciIdStr); // Burada sanatçı ID'si bir int'e dönüştürülür
+                db.sanatciyaGoreIcerikListele(sanatciId);  // Veritabanındaki içerikleri listele
+                JOptionPane.showMessageDialog(null, "Listeleme tamamlandı! Sonuçlar console'a yazdırıldı.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
-                        System.out.print("Yeni başlık: ");
-                        String yeniBaslik = scanner.nextLine();
 
-                        System.out.print("Yeni süre: ");
-                        int yeniSure;
-                        try {
-                            yeniSure = scanner.nextInt();
-                        } catch (InputMismatchException e) {
-                            System.out.println("Geçersiz süre! Sayı giriniz.");
-                            scanner.nextLine(); // buffer'ı temizle
-                            break;
-                        }
+    private static void odemeEkleDialog() {
+        JTextField kullaniciIdField = new JTextField();
+        JTextField miktarField = new JTextField();
 
-                        System.out.print("Yeni tür (s: Şarkı, a: Albüm, p: Podcast): ");
-                        char yeniTuru = scanner.next().toLowerCase().charAt(0);
-                        if (yeniTuru != 's' && yeniTuru != 'a' && yeniTuru != 'p') {
-                            System.out.println("Geçersiz tür! Lütfen s, a veya p giriniz.");
-                            break;
-                        }
+        Object[] inputs = {
+                "Kullanıcı ID:", kullaniciIdField,
+                "Ödeme Miktarı:", miktarField
+        };
 
-                        db.updateIcerik(guncelleIcerikId, yeniBaslik, yeniSure, yeniTuru);  // İçeriği güncelle
-                        break;
-
-                    case 7:
-                        System.out.print("Kullanıcı ID'sini girin: ");
-                        int kullaniciIdSikayet = scanner.nextInt();
-                        scanner.nextLine(); // buffer'ı temizle
-                        System.out.print("Şikayet içeriğini girin: ");
-                        String sikayetIcerik = scanner.nextLine();
-                        db.sikayetEkle(kullaniciIdSikayet, sikayetIcerik);
-                        break;
-                    case 8:
-                        System.out.print("Kullanıcı ID'sini girin: ");
-                        int kullaniciIdOdeme = scanner.nextInt();
-                        System.out.print("Ödeme miktarını girin: ");
-                        BigDecimal odemeMiktar = scanner.nextBigDecimal();
-                        db.odemeEkle(kullaniciIdOdeme, odemeMiktar);
-                        break;
-                    case 9:
-                        System.out.print("Kullanıcı ID'sini girin: ");
-                        int kullaniciIdDinleme = scanner.nextInt();
-                        System.out.print("İçerik ID'sini girin: ");
-                        int icerikIdDinleme = scanner.nextInt();
-                        System.out.print("Dinleme süresini girin (saniye cinsinden): ");
-                        int sureDinleme = scanner.nextInt();
-
-                        // Saniye değeri 60'dan büyükse dakika ve saniye olarak bölün
-                        int dakika = sureDinleme / 60;
-                        int saniye = sureDinleme % 60;
-
-                        // Dinleme süresini dakika ve saniye cinsinden LocalTime olarak oluştur
-                        db.dinlemeEkle(kullaniciIdDinleme, icerikIdDinleme, Time.valueOf(LocalTime.of(0, dakika, saniye)));
-                        break;
-                    case 10:
-                        System.out.print("Kullanıcı ID'sini girin: ");
-                        int kullaniciIdDegerlendirme = scanner.nextInt();
-                        System.out.print("İçerik ID'sini girin: ");
-                        int icerikIdDegerlendirme = scanner.nextInt();
-                        System.out.print("Puanı girin (1-5): ");
-                        int puan = scanner.nextInt();
-                        scanner.nextLine(); // buffer'ı temizle
-                        System.out.print("Yorumunuzu girin: ");
-                        String yorum = scanner.nextLine();
-                        db.degerlendirmeEkle(kullaniciIdDegerlendirme, icerikIdDegerlendirme, puan, yorum);
-                        break;
-                    case 11:
-                        System.out.println("Çıkılıyor...");
-                        scanner.close();
-                        return;
-                    default:
-                        System.out.println("Geçersiz seçim, tekrar deneyin.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Geçersiz giriş! Lütfen doğru formatta bir değer giriniz.");
-                scanner.nextLine(); // buffer'ı temizle
+        int result = JOptionPane.showConfirmDialog(null, inputs, "Ödeme Ekle", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                int kullaniciId = Integer.parseInt(kullaniciIdField.getText());
+                BigDecimal miktar = new BigDecimal(miktarField.getText());
+                db.odemeEkle(kullaniciId, miktar);
+                JOptionPane.showMessageDialog(null, "Ödeme başarıyla eklendi!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Hata: " + ex.getMessage(), "Hata", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

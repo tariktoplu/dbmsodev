@@ -18,7 +18,7 @@ public class DbFunctions {
         }
         return conn;
     }
-    public void insertIcerik(String adi, int sure, int album_id, int sanatci_id, char turu, int kullanici_id) {
+    public void insertIcerik(String adi, int sure, Integer album_id, int sanatci_id, char turu, int kullanici_id) {
         Statement statement = null;
         Connection conn = this.connect_to_db();
 
@@ -216,6 +216,7 @@ public class DbFunctions {
 
         try {
             String query = "SELECT * FROM sanatciya_gore_icerik_listele(" + sanatciId + ");";
+            System.out.println("Sorgu: " + query); // Sorguyu ekrana yazdırarak kontrol edebilirsiniz
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery(query);
 
@@ -225,7 +226,14 @@ public class DbFunctions {
                 int icerikId = rs.getInt("icerikid");
                 String baslik = rs.getString("baslik");
                 int sure = rs.getInt("sure");
-                char turu = rs.getString("turu").charAt(0);
+                String turuString = rs.getString("turu");
+
+                // 'turu' null kontrolü
+                char turu = ' ';  // Varsayılan bir değer
+                if (turuString != null && !turuString.isEmpty()) {
+                    turu = turuString.charAt(0);
+                }
+
                 System.out.println("İçerik ID: " + icerikId + ", Başlık: " + baslik + ", Süre: " + sure + " saniye, Türü: " + turu);
             }
 
@@ -244,6 +252,7 @@ public class DbFunctions {
             }
         }
     }
+
     public void updateIcerik(int icerikId, String yeniBaslik, int yeniSure, char yeniTuru) {
         Statement statement = null;
         Connection conn = this.connect_to_db();
